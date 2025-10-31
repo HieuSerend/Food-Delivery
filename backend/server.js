@@ -1,10 +1,13 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const morgan = require('morgan');
-const app = require('./src');
 
 // Load enviroment variables
 dotenv.config();
+
+
+const morgan = require('morgan');
+const app = require('./src');
+
 
 // Get PORT and Mongo URI
 const PORT = process.env.PORT || 5000;

@@ -9,24 +9,14 @@ const verificationTokenSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['verify_email', 'verify_phone', 'reset_password', 'two_factor'],
-      required: true
-    },
-    deliveryMethod: {
-      type: String,
-      enum: ['email', 'sms'],
+      enum: ['verify_email', 'reset_password', 'two_factor'],
       required: true
     },
     tokenHash: {
       type: String,
       trim: true,
       index: true,
-      sparse: true // chỉ có khi gửi email
-    },
-    code: {
-      type: String, // 6 số OTP
-      trim: true,
-      sparse: true // chỉ có khi gửi SMS
+      required: true,
     },
     expiresAt: {
       type: Date,
@@ -57,7 +47,7 @@ verificationTokenSchema.index(
   {
     unique: true,
     partialFilterExpression: { consumedAt: null },
-    name: 'idx_user_type_active'
+    name: 'idx_user_type_active',
   }
 );
 
@@ -65,12 +55,6 @@ verificationTokenSchema.index(
 verificationTokenSchema.index(
   { tokenHash: 1 },
   { unique: true, sparse: true, name: 'idx_tokenHash' }
-);
-
-// Cho tra cứu OTP nhanh (sms)
-verificationTokenSchema.index(
-  { code: 1 },
-  { sparse: true, name: 'idx_code' }
 );
 
 const VerificationToken = mongoose.model('VerificationToken', verificationTokenSchema);

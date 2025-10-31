@@ -3,9 +3,8 @@ const admin = require('../config/firebaseConfig');
 const UserService = require('./user.service');
 const AuthRepository = require('../repositories/auth.repository');
 const authHelper = require('../utils/authHelper');
+const tokenConfig = require('../config/token.config');
 
-const ACCESS_TOKEN_EXPIRES_IN = '15m';
-const REFRESH_TOKEN_EXPIRES_IN = '7d';
 
 class AuthService {
   /**
@@ -60,24 +59,20 @@ class AuthService {
     }
 
     // Kiem tra mat khau
-    const isMatch = await authHelper.comparePassword(password, user.passwordHash);
+    const isMatch = authHelper.comparePassword(password, user.passwordHash);
     if (!isMatch) {
       throw new Error('Wrong password');
     }
 
     // Create token
-    const accessToken = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_ACCESS_SECRET,
-      { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
-    );
+    const accessToken = authHelper.generateAccessToken(user._id);
 
-    const refreshToken = authHelper.hashRefreshToken(authHelper.generateRefreshToken());
+    const refreshToken = authHelper.generateRefreshToken(user._id);
     await AuthRepository.createAuthSession({
       userId: user._id,
       refreshTokenHash: refreshToken,
       device: deviceInfo,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      expiresAt: tokenConfig.calculateExpiresAt(tokenConfig.getRefreshTokenExpiry())
     });
 
 
@@ -87,6 +82,25 @@ class AuthService {
       refreshToken
     }
 
+  }
+
+  async refreshAccessToken(refreshToken) {
+    try {
+      const decoded = authHelper.verifyRefreshToken(refreshToken);
+
+      const session = await AuthRepository.findValidSessionByUserId(decoded.userId);
+      if (!session) {
+        throw new Error('Session expired or revoked');
+      }
+
+      // tạo access token mới
+      const newAccessToken = authHelper.generateAccessToken(decoded.userId);
+
+      return newAccessToken;
+    } catch (err) {
+      console.error('Refresh token failed:', err.message);
+      throw new Error('Invalid or expired refresh token');
+    }
   }
 }
 

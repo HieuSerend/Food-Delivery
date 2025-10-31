@@ -13,10 +13,9 @@ const authSessionSchema = new mongoose.Schema(
       trim: true,
     },
     device: {
-      deviceId: { type: String, trim: true },
       userAgent: { type: String, trim: true },
       ipAddress: { type: String, trim: true },
-      platform: { type: String, enum: ['web', 'android', 'ios'], required: true },
+      platform: { type: String, enum: ['web'], default: 'web', required: true }, //hiện tại chỉ có web, sau có thể mở rộng
     },
     createdAt: {
       type: Date,
@@ -45,7 +44,7 @@ authSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 // Index theo user đang active
 authSessionSchema.index({ userId: 1, revokedAt: 1 }, { name: 'idx_userId_revokedAt' });
 
-// Index với web session
+// Index với web session, hiện tại không cần lắm nhưng cần cho sau khi có thêm mobile
 authSessionSchema.index(
   { userId: 1, 'device.platform': 1 },
   {

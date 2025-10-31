@@ -1,5 +1,10 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const tokenConfig = require('../config/token.config');
+
+const REFRESH_TYPE = 'refresh';
+const ACCESS_TYPE = 'access';
 
 /**
  * @description Hashing password 
@@ -23,15 +28,72 @@ async function comparePassword(password, hashedPassword) {
 }
 
 /**
- * @description Tạo 1 refresh token mạnh, ngẫu nhiên
- * @returns {string} Refresh token chưa băm
+ * @description Tạo 1 refresh token dưới dạng JWT
+ * @param {string} userId - ID của người dùng
+ * @returns {string} Refresh token chưa băm đã được ký
  */
-function generateRefreshToken() {
-  return crypto.randomBytes(32).toString('hex');
+function generateRefreshToken(userId) {
+  const payload = {
+    userId: userId,
+    type: REFRESH_TYPE
+  }
+
+  const token = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: tokenConfig.getRefreshTokenExpiry()});
+
+  return token;
 }
 
-function hashRefreshToken(token) {
-  return crypto.createHash('sha256').update(token).digest('hex');
+function generateAccessToken(userId) {
+  const payload = {
+    userId: userId,
+    type: ACCESS_TYPE
+  }
+
+  const token = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, { expiresIn: tokenConfig.getAccessTokenExpiry() });
+
+  return token;
 }
 
-module.exports = { hashPassword, comparePassword, generateRefreshToken, hashRefreshToken };
+/**
+ * 
+ * @param {string} token
+ * @returns {string} payload 
+ */
+function verifyRefreshToken(token) {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+
+    if (decoded.type !== REFRESH_TYPE) {
+      throw new Error('Invalid token type');
+    }
+
+    return decoded;
+  } catch (error) {
+    console.error("Refresh Token Verification Failed:", error.message);
+    return null;
+  }
+}
+
+function verifyAccessToken(token) {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+
+    if (decoded.type !== ACCESS_TYPE) {
+      throw new Error('Invalid token type');
+    }
+
+    return decoded;
+  } catch (err) {
+    console.error("Access Token Verification Failed:", err.message);
+    return null;
+  }
+}
+
+module.exports = { 
+  hashPassword,
+  comparePassword, 
+  generateRefreshToken, 
+  generateAccessToken,
+  verifyRefreshToken,
+  verifyAccessToken
+};

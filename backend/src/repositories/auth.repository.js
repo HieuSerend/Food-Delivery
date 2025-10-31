@@ -34,6 +34,20 @@ class AuthRepository {
     const authSession = new AuthSession(data);
     return await authSession.save();
   }
+
+  async findValidSessionByUserId(userId) {
+    return await AuthSession.findOne({
+      userId,
+      revokedAt: null,
+      expiresAt: { $gt: new Date() },
+    });
+  }
+
+  async revokeSession(sessionId) {
+    return await AuthSession.findByIdAndUpdate(sessionId, {
+      revokedAt: new Date(),
+    });
+  }
 }
 
 

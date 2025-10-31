@@ -25,13 +25,11 @@ class AuthController {
   // [POST] /login
   async login(req, res, next) {
     try{
-      const { phone, password, platform = 'web', deviceId = null } = req.body;
+      const { phone, password } = req.body;
 
       const deviceInfo = {
-        deviceId,
         userAgent: req.headers['user-agent'] || 'unknown',
         ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
-        platform,
       };
 
       const { user, accessToken, refreshToken } = await AuthService.login(phone, password, deviceInfo);
@@ -55,6 +53,22 @@ class AuthController {
         });
     } catch (err) {
       next(err);
+    }
+  }
+
+  // [POST] /refresh 
+  async refreshAccessToken(req, res, next) {
+    try {
+      const refreshToken = req.cookies.refreshToken;
+      if (!refreshToken) {
+        return res.status(401).json({ message: 'Missing refresh token' });
+      }
+
+      const newAccessToken = await AuthService.refreshAccessToken(refreshToken);
+
+      return res.status(200).json({ accessToken: newAccessToken});
+    } catch (err) {
+      return res.status(403).json({ message: err.message });
     }
   }
 }

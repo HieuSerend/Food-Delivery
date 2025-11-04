@@ -83,6 +83,24 @@ class AuthController {
     res.clearCookie('refreshToken');
     return res.status(200).json({ message: 'Logged out successfully' });
   }
+
+  // [POST] /verification-email
+  async sendEmailVerification(req, res, next) {
+    try {
+      const { email } = req.body;
+      const userId = req.user?.userId;
+      console.log('req.body:', req.body);
+
+      if (!email || !userId) {
+        return res.status(400).json({ message: 'Missing email or userId' });
+      }
+
+      await AuthService.sendEmailVerification(userId, email);
+      return res.status(200).json({ message: 'If the email exists, we have sent a verification email.' });
+    } catch (err) {
+      next(err);
+    }
+  } 
 }
 
 

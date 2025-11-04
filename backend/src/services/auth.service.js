@@ -1,10 +1,12 @@
-const jwt = require('jsonwebtoken');
+
 const admin = require('../config/firebaseConfig');
 const UserService = require('./user.service');
-const AuthRepository = require('../repositories/auth.repository');
+const TokenService = require('./token.service');
 const authHelper = require('../utils/authHelper');
 const tokenConfig = require('../config/token.config');
-
+const UserRepository = require('../repositories/user.repository');
+const AuthRepository = require('../repositories/auth.repository');
+const EmailService = require('./email.service');
 
 class AuthService {
   /**
@@ -72,7 +74,7 @@ class AuthService {
       userId: user._id,
       refreshTokenId: refreshTokenId,
       device: deviceInfo,
-      expiresAt: tokenConfig.calculateExpiresAt(tokenConfig.getRefreshTokenExpiry())
+      expiresAt: tokenConfig.calculateExpiresAt(tokenConfig.getTokenConfig().REFRESH.expiry)
     });
 
 
@@ -115,6 +117,25 @@ class AuthService {
     } catch (err) {
       throw new Error('Log out failed!');``
     }
+  }
+
+  async sendEmailVerification(userId, email) {
+    // kiểm tra user
+    const user = await UserRepository.findById(userId);
+    if (!user) throw new Error('User not found');
+
+    // lưu email tạm thời chưa verify
+    await UserRepository.updateEmail(userId, email);
+
+    const token = await TokenService.createEmailVerificationToken(userId, email);
+    if (!token) {
+      throw new Error('Failed to create verification token');
+    }
+
+    // gui email
+    await EmailService.sendVerifyEmail(user, token);
+
+    return true;
   }
 }
 

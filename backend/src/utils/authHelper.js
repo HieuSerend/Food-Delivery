@@ -63,7 +63,7 @@ function verifyToken(token, tokenTypeConfig) {
     }
     return decoded;
   } catch (err) {
-    console.error(`${tokenTypeConfig.type.toUpperCase()} Token Verification Failed:`, error.message);
+    console.error(`${tokenTypeConfig.type.toUpperCase()} Token Verification Failed:`, err.message);
     return null;
   }
 }
@@ -97,8 +97,17 @@ function generateEmailVerificationToken(userId, email) {
 
 function verifyEmailVerificationToken(token) {
     const config = tokenConfig.getTokenConfig().EMAIL_VERIFY;
-    console.log(config.secret);
     return verifyToken(token, config);
+}
+
+function generateResetPasswordToken(userId) {
+  const config = tokenConfig.getTokenConfig().RESET_PASSWORD;
+  return generateToken(userId, config);
+}
+
+function verifyResetPasswordToken(token) {
+  const config = tokenConfig.getTokenConfig().RESET_PASSWORD;
+  return verifyToken(token, config);
 }
 
 module.exports = { 
@@ -110,4 +119,6 @@ module.exports = {
   verifyAccessToken,
   generateEmailVerificationToken,
   verifyEmailVerificationToken,
+  generateResetPasswordToken,
+  verifyResetPasswordToken,
 };

@@ -61,7 +61,7 @@ class AuthController {
     try {
       const refreshToken = req.cookies.refreshToken;
       if (!refreshToken) {
-        return res.status(401).json({ message: 'Missing refresh token' });
+        return res.status(401).json({ error: 'Missing refresh token' });
       }
 
       const newAccessToken = await AuthService.refreshAccessToken(refreshToken);
@@ -76,7 +76,7 @@ class AuthController {
   async logout(req, res, next) {
     const  refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-      return res.status(400).json({ message: 'No token provided' });
+      return res.status(400).json({ error: 'No token provided' });
     }
 
     await AuthService.logout(refreshToken);
@@ -92,7 +92,7 @@ class AuthController {
       console.log('req.body:', req.body);
 
       if (!email || !userId) {
-        return res.status(400).json({ message: 'Missing email or userId' });
+        return res.status(400).json({ error: 'Missing email or userId' });
       }
 
       await AuthService.sendEmailVerification(userId, email);
@@ -108,11 +108,48 @@ class AuthController {
       const { token } = req.query;
 
       if (!token) {
-        return res.status(400).json({ message: 'Missing token' });
+        return res.status(400).json({ error: 'Missing token' });
       }
 
       await AuthService.verifyEmailToken(token);
       return res.status(200).json({ success: true, message: 'Email verified successfully!' });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // [POST] /api/auth/password-reset-request
+  async sendPasswordResetRequest(req, res, next) {
+    try {
+      let { email } = req.body;
+      email = email.trim();
+
+      if (!email || email === '') {
+        return res.status(400).json({ error: 'No email was sended'});
+      }
+
+      await AuthService.sendPasswordResetRequest(email);
+
+      res.status(200).json({
+        message: 'Password reset email sent successfully'
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // [POST] /api/auth/password-reset
+  async resetPassword(req, res, next) {
+    try {
+      const { token, newPassword } = req.body;
+
+      if (!token || !newPassword) {
+        return res.status(400).json({ error: 'Missing token or new password' });
+      }
+
+      await AuthService.resetPassword(token, newPassword);
+
+      return res.status(200).json({ message: 'Password has been reset successfully' });
     } catch (err) {
       next(err);
     }

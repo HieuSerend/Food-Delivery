@@ -140,6 +140,9 @@ class AuthService {
 
   async verifyEmailToken(token) {
     const decoded = authHelper.verifyEmailVerificationToken(token);
+    if (!decoded) {
+      throw new Error('No valid token');
+    }
     const { userId, email } = decoded;
     
     // kiểm tra token hợp lệ không
@@ -149,6 +152,40 @@ class AuthService {
     await UserService.markEmailVerified(userId, email);
 
     return { userId, email, message: 'Email verified successfully' };
+  }
+
+  async sendPasswordResetRequest(email) {
+    const user = await UserRepository.findByEmail(email);
+    if (!user) throw new Error('No account found with this email');
+    if (!user.emailVerifiedAt) {
+      throw new Error('Email is not verified yet');
+    }
+
+    const token = await TokenService.createResetPasswordToken(user._id);
+
+    if (!token) {
+      throw new Error('Failed to create reset password token');
+    }
+
+    await EmailService.sendResetPasswordEmail(user, token);
+
+    return true;
+  }
+
+  async resetPassword(token, newPassword) {
+    const decoded = authHelper.verifyResetPasswordToken(token);
+    if (!decoded) throw new Error('No valid token');
+
+    const { userId } = decoded;
+
+    await TokenService.verifyResetPasswordToken(userId);
+
+    await UserService.resetPassword(userId, newPassword);
+
+    // revoke authsession(refresh token)
+    await AuthRepository.revokeAllSessionsForUser(userId);
+
+    return true;
   }
 }
 

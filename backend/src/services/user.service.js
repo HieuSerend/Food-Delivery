@@ -1,6 +1,8 @@
 
 const TokenRepository = require('../repositories/token.repository');
 const UserRepository = require('../repositories/user.repository');
+const authHelper = require('../utils/authHelper');
+
 class UserService {
   async createUser(data) {
     return await UserRepository.createUser(data);
@@ -41,6 +43,16 @@ class UserService {
 
   async getById(userId) {
     return await UserRepository.findById(userId);
+  }
+
+  async resetPassword(userId, newPassword) {
+    const user = await UserRepository.findById(userId);
+
+    if (!user) throw new Error('User not found');
+
+    const passwordHash = await authHelper.hashPassword(newPassword);
+
+    return await UserRepository.updateUser(userId, { passwordHash });
   }
 
 }

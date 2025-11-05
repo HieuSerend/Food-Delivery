@@ -42,6 +42,28 @@ class TokenService {
 
     return true;
   }
+
+  async createResetPasswordToken(userId) {
+    const token = authHelper.generateResetPasswordToken(userId);
+
+    await TokenRepository.createToken({
+      userId,
+      type: 'reset_password',
+      tokenHash: token,
+      expiresAt: tokenConfig.calculateExpiresAt(tokenConfig.getTokenConfig().RESET_PASSWORD.expiry),
+    });
+
+    return token;
+  }
+
+  async verifyResetPasswordToken(userId) {
+    const record = await TokenRepository.findActiveToken(userId, 'reset_password');
+    if (!record) throw new Error('Token not found or already used');
+
+    await TokenRepository.consumeToken(userId, 'reset_password');
+
+    return true;
+  }
 }
 
 

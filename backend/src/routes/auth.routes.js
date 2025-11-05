@@ -13,9 +13,9 @@ router.post('/verification-email', authMiddleware, AuthController.sendEmailVerif
 // xác nhận email khi người dùng click vào link trong email
 router.get('/verify-email', AuthController.verifyEmailToken);
 
-// // gửi token đến email đã verify
-// router.post('/password-reset-request', AuthController.sendPasswordResetRequest);
-// // cập nhật mật khẩu mới 
-// router.post('/auth/password-reset', AuthController.resetPassword);
+// gửi token đến email đã verify
+router.post('/password-reset-request', AuthController.sendPasswordResetRequest);
+// cập nhật mật khẩu mới 
+router.post('/password-reset', AuthController.resetPassword);
 
 module.exports = router;

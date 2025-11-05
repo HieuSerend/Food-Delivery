@@ -72,7 +72,7 @@ passport.use(
             }
           );
 
-          return done(null, { status: 'REQUIRE_PHONE_AND_USERNAME', userId: newUser._id.toString() });
+          return done(null, { status: 'REQUIRE_PHONE_USERNAME_PASSWORD', userId: newUser._id.toString() });
         }
       } catch (err) {
       return done(err);

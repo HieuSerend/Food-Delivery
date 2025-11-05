@@ -202,11 +202,11 @@ class AuthController {
           const { status, userId } = userData;
 
           // Nếu user cần bổ sung sđt + username
-          if (status === 'REQUIRE_PHONE_AND_USERNAME') {
+          if (status === 'REQUIRE_PHONE_USERNAME_PASSWORD') {
             return res.status(202).json({
-              status: 'REQUIRE_PHONE',
+              status: 'REQUIRE_PHONE_USERNAME_PASSWORD',
               userId,
-              message: 'Please provide phone number and username to complete your profile.',
+              message: 'Please provide phone number, username and password to complete your profile.',
             });
           }
 
@@ -242,6 +242,44 @@ class AuthController {
     } catch (err) {
       next(err);
     }
+  }
+
+  // [POST] /complete-profile
+  async completeProfile(req, res, next) {
+    try {
+      const { userId, phone, username, password } = req.body;
+
+      if (!userId || !phone || !username || !password) {
+        return res.status(400).json({ message: 'Missing userId or phone or username or password' });
+      }
+
+      const deviceInfo = {
+        userAgent: req.headers['user-agent'] || 'unknown',
+        ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
+      };
+
+      const { user, accessToken, refreshToken } = await AuthService.completeProfile(userId, phone, username, password, deviceInfo);
+
+      return res
+        .cookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+        .status(200)
+        .json({
+          message: 'Profile completed successfully',
+          accessToken: accessToken,
+          user: {
+            id: user._id,
+            username: user.username,
+            phone: user.phone,
+          },
+        });
+      } catch (err) {
+        next(err);
+      }
   }
 }
 

@@ -3,6 +3,7 @@ const TokenRepository = require('../repositories/token.repository');
 const UserRepository = require('../repositories/user.repository');
 const authHelper = require('../utils/authHelper');
 
+
 class UserService {
   async createUser(data) {
     return await UserRepository.createUser(data);
@@ -18,6 +19,10 @@ class UserService {
 
   async findByEmail(email) {
     return await UserRepository.findByEmail(email);
+  }
+
+  async updateUser(userId, data) {
+    return await UserRepository.updateUser(userId, data);
   }
 
   async markPhoneVerified(userId) {

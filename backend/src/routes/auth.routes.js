@@ -21,4 +21,6 @@ router.post('/password-reset', AuthController.resetPassword);
 /** Oauth */
 router.get('/oauth-url', AuthController.getOauthUrl);
 router.get('/:provider/callback', AuthController.oauthCallback);
+
+router.post('/complete-profile', AuthController.completeProfile);
 module.exports = router;

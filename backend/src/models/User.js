@@ -48,8 +48,11 @@ const userSchema = new mongoose.Schema(
     },
     passwordHash: {
       type: String,
-      required: true,
       select: false,
+      required: function () {
+        // password chỉ bắt buộc nếu user đăng ký bằng local
+        return this.providers.some(p => p.provider === 'local');
+      }
     },
     providers: {
       type: [providerSchema],

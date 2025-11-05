@@ -220,6 +220,32 @@ class AuthService {
   parseAndVerifyState(state) {
     return OauthService.parseAndVerifyState(state);
   }
+
+  async completeProfile(userId, phone, username, password, deviceInfo) {
+    const user = await UserService.getById(userId);
+    if (!user) throw new Error('User not found');
+
+    const existed = await UserService.findByPhone(phone);
+    if (existed) throw new Error('Phone already registerd');
+
+    const passwordHash = await authHelper.hashPassword(password);
+
+    const updatedUser = await UserService.updateUser(userId, {
+      phone,
+      passwordHash,
+      username: username || user.username,
+      status: 'active',
+      phoneVerifiedAt: new Date(), // hiên tại chưa xử lí
+    });
+
+    const { accessToken, refreshToken } = await this.generateTokensForUser(userId, deviceInfo);
+
+    return {
+      user: updatedUser,
+      accessToken,
+      refreshToken,
+    };
+  }
 }
 
 

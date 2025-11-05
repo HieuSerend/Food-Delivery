@@ -20,15 +20,29 @@ class UserService {
     });
   }
 
-  async markEmailVerified(userId) {
-    return await UserRepository.updateUser(userId, {
-      emailVerifiedAt: new Date()
-    });
+  async markEmailVerified(userId, email) {
+    const user = await UserRepository.findById(userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.email !== email) {
+      throw new Error('Email mismatch - cannot verify this email');
+    }
+
+    // nếu đã verify rồi thì bỏ qua
+    if (user.emailVerifiedAt) {
+      return user;
+    }
+
+    return await UserRepository.verifyEmail(userId);
   }
 
   async getById(userId) {
     return await UserRepository.findById(userId);
   }
+
 }
 
 

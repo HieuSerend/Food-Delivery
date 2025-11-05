@@ -137,6 +137,19 @@ class AuthService {
 
     return true;
   }
+
+  async verifyEmailToken(token) {
+    const decoded = authHelper.verifyEmailVerificationToken(token);
+    const { userId, email } = decoded;
+    
+    // kiểm tra token hợp lệ không
+    await TokenService.verifyEmailVerificationToken(userId);
+
+    // cập nhật trạng thái email
+    await UserService.markEmailVerified(userId, email);
+
+    return { userId, email, message: 'Email verified successfully' };
+  }
 }
 
 

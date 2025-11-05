@@ -21,12 +21,6 @@ class TokenService {
     return otp;
   }
 
-  async verifyPhoneOTP(userId, otp) {
-    const token = await TokenRepository.consumeToken(userId, otp);
-    if (!token) throw new Error('Invalid or expired OTP!');
-    return token;
-  }
-
   async createEmailVerificationToken(userId, email) {
     const token = authHelper.generateEmailVerificationToken(userId, email);
 
@@ -38,6 +32,15 @@ class TokenService {
     });
 
     return token;
+  }
+
+  async verifyEmailVerificationToken(userId) {
+    const record = await TokenRepository.findActiveToken(userId, 'verify_email');
+    if (!record) throw new Error('Token not found or already used');
+
+    await TokenRepository.consumeToken(userId, 'verify_email');
+
+    return true;
   }
 }
 

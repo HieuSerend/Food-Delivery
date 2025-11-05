@@ -10,8 +10,8 @@ router.post('/logout', AuthController.logout);
 
 // gửi email xác minh đến người dùng
 router.post('/verification-email', authMiddleware, AuthController.sendEmailVerification);
-// // xác nhận email khi người dùng click vào link trong email
-// router.get('/verify-email', AuthController.verifyEmailToken);
+// xác nhận email khi người dùng click vào link trong email
+router.get('/verify-email', AuthController.verifyEmailToken);
 
 // // gửi token đến email đã verify
 // router.post('/password-reset-request', AuthController.sendPasswordResetRequest);

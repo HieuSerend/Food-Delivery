@@ -101,6 +101,22 @@ class AuthController {
       next(err);
     }
   } 
+
+  // [GET] /verify-email
+  async verifyEmailToken(req, res, next) {
+    try {
+      const { token } = req.query;
+
+      if (!token) {
+        return res.status(400).json({ message: 'Missing token' });
+      }
+
+      await AuthService.verifyEmailToken(token);
+      return res.status(200).json({ success: true, message: 'Email verified successfully!' });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 

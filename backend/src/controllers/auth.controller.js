@@ -1,4 +1,5 @@
 const AuthService = require('../services/auth.service');
+const passport = require('passport');
 
 class AuthController {
   // [GET] /
@@ -47,7 +48,7 @@ class AuthController {
           accessToken,
           user: {
             id: user._id,
-            name: user.name,
+            username: user.username,
             phone: user.phone
           }
         });
@@ -165,6 +166,79 @@ class AuthController {
 
       console.log(url);
       return res.status(200).json({ message: 'Get Oauth Url successfully', url: url });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // [GET] /:provider/callback
+  async oauthCallback(req, res, next) {
+    try {
+      const { provider } = req.params;
+
+      return passport.authenticate(provider, { session: false }, async (err, userData, info) => {
+        console.log('authenticating...');
+        try {
+          // được lấy từ phần done của callback trong Strategy 
+          // lỗi do exchange code hoặc user cancel
+          if (err) return next(err);
+
+          // người dùng hủy hoặc có lỗi Oauth
+          if (!userData) {
+            const { error, error_description } = req.query;
+            return res.status(400).json({
+              error: error || 'oauth_failed',
+              error_description: error_description || info?.message || 'OAuth login failed',
+            });
+          } 
+
+          // Verify state
+          const { state } = req.query;
+          const st = AuthService.parseAndVerifyState(state);
+
+          if (!st) return res.status(400).json({ error: 'Bad state' });
+          if (st.provider !== provider) return res.status(400).json({ error: 'Provider Mismatch' });
+
+          const { status, userId } = userData;
+
+          // Nếu user cần bổ sung sđt + username
+          if (status === 'REQUIRE_PHONE_AND_USERNAME') {
+            return res.status(202).json({
+              status: 'REQUIRE_PHONE',
+              userId,
+              message: 'Please provide phone number and username to complete your profile.',
+            });
+          }
+
+          // nếu đầy đủ -> cấp token
+          const deviceInfo = {
+            userAgent: req.headers['user-agent'] || 'unknown',
+            ipAddress: req.ip || req.connection.remoteAddress || 'unknown',
+          };
+
+          const { user, accessToken, refreshToken } = await AuthService.generateTokensForUser(userId, deviceInfo);
+
+          return res
+            .cookie('refreshToken', refreshToken, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'strict',
+              maxAge: 7 * 24 * 60 * 60 * 1000,
+            })
+            .status(200)
+            .json({
+              message: 'Login successfully via OAuth',
+              accessToken,
+              user: {
+                id: user._id,
+                username: user.username,
+                phone: user.phone,
+              },
+            });
+        } catch (error) {
+          next(error);
+        }
+      })(req, res, next);
     } catch (err) {
       next(err);
     }

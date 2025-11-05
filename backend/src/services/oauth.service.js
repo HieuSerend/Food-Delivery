@@ -43,6 +43,10 @@ class OauthService {
 
     return { url: `${cfg.authUrl}?${query}`, state };
   }
+
+  parseAndVerifyState(state) {
+    return authHelper.verifyOauthToken(state);
+  }
 }
 
 module.exports = new OauthService();

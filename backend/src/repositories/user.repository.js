@@ -18,6 +18,13 @@ class UserRepository {
     return await User.findById(userId);
   }
 
+  async findByProviderId(provider, providerId) {
+    return await User.findOne({
+      'providers.provider': provider,
+      'providers.providerId': providerId,
+    });
+  }
+
   async createUser(data) {
     const user = new User(data);
     return await user.save();
@@ -53,6 +60,40 @@ class UserRepository {
 
   async findByEmail(email) {
     return await User.findOne({ email });
+  }
+
+  async updateProviderById(userId, providerObject) {
+    const { provider, providerId, emailAtProvider, avatarUrl } = providerObject;
+
+    const user = await User.findOne(
+      { _id: userId, 'providers.provider': provider},
+      { 'providers.$': 1}
+    );
+    
+    if (user) {
+      return await User.findOneAndUpdate(
+        { _id: userId, 'providers.provider': provider },
+        {
+          $set: {
+            'providers.$.providerId': providerId,
+            'providers.$.emailAtProvider': emailAtProvider,
+            'providers.$.avatarUrl': avatarUrl,
+          },
+        },
+        { new: true }
+      )
+    }
+
+    // nếu chưa có -> push
+    return await User.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          providers: providerObject,
+        },
+      },
+      { new: true }
+    );
   }
 }
 

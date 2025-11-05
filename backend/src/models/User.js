@@ -20,12 +20,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       lowercase: true,
-      required: true,
+      required: function () {
+        // username chỉ bắt buộc nếu user đăng ký bằng local
+        return this.providers.some(p => p.provider === 'local');
+      }
     },
     phone: {
       type: String,
       trim: true,
-      required: true,
+      required: function () {
+        // phone chỉ bắt buộc nếu user đăng ký bằng local
+        return this.providers.some(p => p.provider === 'local');
+      }
     },
     phoneVerifiedAt: {
       type: Date,
@@ -56,7 +62,7 @@ const userSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['active', 'banned'],
+      enum: ['active', 'banned', 'pending'],
       default: 'active',
     },
     address: {
@@ -100,7 +106,10 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ 'address.geo': '2dsphere' }, { name: 'geo_Idx' });
 
 // Unique index
-userSchema.index({ username: 1 }, { unique: true });
+userSchema.index(
+  { username: 1 },
+  { unique: true, partialFilterExpression: { username: { $type: 'string' } } }
+);
 userSchema.index(
   { phone: 1 },
   { unique: true, partialFilterExpression: { phone: { $type: 'string' } } }

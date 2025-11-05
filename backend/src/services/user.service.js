@@ -16,6 +16,10 @@ class UserService {
     return await UserRepository.findByPhone(phone);
   }
 
+  async findByEmail(email) {
+    return await UserRepository.findByEmail(email);
+  }
+
   async markPhoneVerified(userId) {
     return await UserRepository.updateUser(userId, {
       phoneVerifiedAt: new Date()
@@ -55,6 +59,13 @@ class UserService {
     return await UserRepository.updateUser(userId, { passwordHash });
   }
 
+  async findByProviderId(provider, providerId) {
+    return await UserRepository.findByProviderId(provider, providerId);
+  }
+
+  async updateProviderById(userId, providerObject) {
+    return await UserRepository.updateProviderById(userId, providerObject);
+  }
 }
 
 

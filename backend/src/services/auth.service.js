@@ -88,6 +88,29 @@ class AuthService {
 
   }
 
+  // được gọi khi không login bình thường
+  async generateTokensForUser(userId, deviceInfo = {}) {
+    const user = await UserService.getById(userId);
+    if (!user) throw new Error('User not found while generating tokens');
+
+    const accessToken = authHelper.generateAccessToken(user._id);
+
+    const { refreshToken, refreshTokenId } = authHelper.generateRefreshToken(user._id);
+
+    await AuthRepository.createAuthSession({
+      userId,
+      refreshTokenId,
+      device: deviceInfo,
+      expiresAt: tokenConfig.calculateExpiresAt(tokenConfig.getTokenConfig().REFRESH.expiry)
+    });
+
+    return {
+      user,
+      accessToken,
+      refreshToken
+    };
+  }
+
   async refreshAccessToken(refreshToken) {
     try {
       const decoded = authHelper.verifyRefreshToken(refreshToken);
@@ -192,6 +215,10 @@ class AuthService {
 
   getOauthUrl(provider, returnUrl) {
     return OauthService.buildAuthUrl(provider, returnUrl);
+  }
+
+  parseAndVerifyState(state) {
+    return OauthService.parseAndVerifyState(state);
   }
 }
 

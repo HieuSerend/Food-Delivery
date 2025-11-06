@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import Banner1 from '../../../assets/picture/FoodBanners_1.jpg';
-import Banner2 from '../../../assets/picture/FoodBanners_2.jpg';
-import Banner3 from '../../../assets/picture/FoodBanners_3.jpg';
+import Banner1 from '../../../assets/picture/Foodbanner_1.png';
+import Banner2 from '../../../assets/picture/Foodbanner_2.png';
 
 type Slide = {
   id: number;
@@ -16,7 +15,7 @@ type Slide = {
 const slides: Slide[] = [
   { id: 1, src: Banner1, alt: 'Promo 1' },
   { id: 2, src: Banner2, alt: 'Promo 2' },
-  { id: 3, src: Banner3, alt: 'Promo 3' },
+  { id: 3, src: Banner1, alt: 'Promo 3' },
 ];
 
 const AUTO_PLAY_MS = 4000;

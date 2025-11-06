@@ -2,6 +2,9 @@ const TokenRepository = require('../repositories/token.repository');
 const authHelper = require('../utils/authHelper');
 const tokenConfig = require('../config/token.config');
 
+const HTTP_ERROR = require('../utils/httpErrors');
+const ERR = require('../constants/errorCodes');
+
 class TokenService {
   async createVerifyPhoneToken(userId, phone) {
     // tạo otp 6 số
@@ -36,7 +39,7 @@ class TokenService {
 
   async verifyEmailVerificationToken(userId) {
     const record = await TokenRepository.findActiveToken(userId, 'verify_email');
-    if (!record) throw new Error('Token not found or already used');
+    if (!record) throw new HTTP_ERROR.NotFoundError('Invalid or expired token', ERR.TOKEN_NOT_FOUND);
 
     await TokenRepository.consumeToken(userId, 'verify_email');
 
@@ -58,7 +61,7 @@ class TokenService {
 
   async verifyResetPasswordToken(userId) {
     const record = await TokenRepository.findActiveToken(userId, 'reset_password');
-    if (!record) throw new Error('Token not found or already used');
+    if (!record) throw new HTTP_ERROR.NotFoundError('Invalid or expired token', ERR.TOKEN_NOT_FOUND);
 
     await TokenRepository.consumeToken(userId, 'reset_password');
 

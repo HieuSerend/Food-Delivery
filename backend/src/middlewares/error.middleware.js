@@ -1,13 +1,20 @@
 function errorHandler(err, req, res, next) {
   console.error(err.stack);
 
-  const status = err.statusCode || 500;
-  const message = err.message || 'Interal Server Error';
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      success: false,
+      error: err.message,
+      code: err.code || null
+    });
+  }
 
-  res.status(status).json({
+  // những lỗi k mong muốn
+  return res.status(500).json({
     success: false,
-    message,
-  });
+    error: 'Internal server error',
+    code: 'INTERNAL_ERROR',
+  })
 }
 
 module.exports = errorHandler;

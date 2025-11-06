@@ -1,0 +1,49 @@
+type: object
+properties:
+  id:
+    type: string
+    example: "671b99fd8cbdc61611dd9e71"
+  username:
+    type: string
+    example: viet6cltt
+  phone:
+    type: string
+    example: +84339999999
+  phoneVerifiedAt:
+    type: string
+    format: date-time
+    nullable: true
+  email:
+    type: string
+    example: viet@gmail.com
+    nullable: true
+  emailVerifiedAt:
+    type: string
+    format: date-time
+    nullable: true
+  providers:
+    type: array
+    items:
+      $ref: "./userProvider.yaml"
+  role:
+    type: string
+    enum: [admin, customer, restaurant_owner, brand_admin]
+    default: customer
+  status:
+    type: string
+    enum: [active, banned, pending]
+    default: active
+  firstname:
+    type: string
+  lastname:
+    type: string
+  avatarUrl:
+    type: string
+  dateOfBirth:
+    type: string
+  createdAt:
+    type: string
+    format: date-time
+  updatedAt:
+    type: string
+    format: date-time

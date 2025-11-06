@@ -1,0 +1,48 @@
+openapi: 3.0.3
+
+info:
+  title: FoodOrder API
+  version: 1.0.0
+  description: API documentation for FoodOrder backend.
+
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+
+paths:
+  $ref: "./paths/auth.yaml"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      $ref: "./schemas/user.yaml"
+
+  responses:
+    LoginSuccess:
+      $ref: "./responses/auth.yaml#/LoginSuccess"
+    LoginInvalid:
+      $ref: "./responses/auth.yaml#/LoginInvalid"
+    RefreshSuccess:
+      $ref: "./responses/auth.yaml#/RefreshSuccess"
+    LogoutSuccess:
+      $ref: "./responses/auth.yaml#/LogoutSuccess"
+    VerificationEmailSuccess:
+      $ref: "./responses/auth.yaml#/VerificationEmailSuccess"
+    VerifyEmailSuccess:
+      $ref: "./responses/auth.yaml#/VerifyEmailSuccess"
+    PasswordResetRequestSuccess:
+      $ref: "./responses/auth.yaml#/PasswordResetRequestSuccess"
+    PasswordResetSuccess:
+      $ref: "./responses/auth.yaml#/PasswordResetSuccess"
+    OauthUrlSuccess:
+      $ref: "./responses/auth.yaml#/OauthUrlSuccess"
+    OauthLoginSuccess:
+      $ref: "./responses/auth.yaml#/OauthLoginSuccess"
+    CompleteProfileSuccess:
+      $ref: "./responses/auth.yaml#/CompleteProfileSuccess"

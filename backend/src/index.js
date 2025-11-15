@@ -1,16 +1,17 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-const path = require('path');
 const cron = require('node-cron');
 const cookieParser = require('cookie-parser');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const path = require('path');
 const passport = require('passport');
 require('./config/passport.config');
 
+
 const route = require('./routes');
 const app = express();
-
-
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -28,7 +29,19 @@ app.use(passport.initialize());
 
 app.use(morgan('dev')); // Log HTTP requests
 
+
+// Load and configure Swagger
+app.use('/api-docs', swaggerUi.serve, (req, res, next) => {
+  const swaggerPath = path.resolve(__dirname, '../dist/swagger.json');
+  delete require.cache[swaggerPath];
+  const swaggerDocument = require(swaggerPath);
+  return swaggerUi.setup(swaggerDocument)(req, res, next);
+});
+
+
 // Route init
 route(app);
+
+
 
 module.exports = app;

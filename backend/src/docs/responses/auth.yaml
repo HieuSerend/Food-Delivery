@@ -1,0 +1,209 @@
+LoginSuccess:
+  description: Login successful
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Login successfully
+          data:
+            type: object
+            properties:
+              accessToken:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR...
+              user:
+                $ref: "../schemas/user.yaml"
+
+LoginInvalid:
+  description: Invalid phone or password
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: false
+          error:
+            type: string
+            example: Invalid phone or password
+          code:
+            type: string
+            example: AUTH_INVALID_CREDENTIALS
+
+RefreshSuccess:
+  description: Refresh access token successful
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Refresh successfully
+          data:
+            type: object
+            properties:
+              accessToken:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR...
+
+LogoutSuccess:
+  description: Logout successful
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Logged out successfully
+          data:
+            type: object
+            example: { }
+
+VerificationEmailSuccess:
+  description: Email verification link sent if email exists
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: If the email exists, we have sent a verification email.
+          data:
+            type: object
+            example: { }
+
+VerifyEmailSuccess:
+  description: Email verified successfully
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Email verified successfully!
+          data:
+            type: object
+            example: { }
+
+PasswordResetRequestSuccess:
+  description: Password reset request email sent successfully
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Password reset email sent successfully
+          data:
+            type: object
+            example: { }
+
+PasswordResetSuccess:
+  description: Password updated successfully
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Password has been reset successfully
+          data:
+            type: object
+            example: { }
+
+OauthUrlSuccess:
+  description: OAuth redirect URL generated
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Get Oauth Url successfully
+          data:
+            type: object
+            properties:
+              url:
+                type: string
+                example: https://accounts.google.com/o/oauth2/v2/auth?...
+
+OauthLoginSuccess:
+  description: Login successfully via OAuth provider
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Login successfully via OAuth
+          data:
+            type: object
+            properties:
+              accessToken:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR...
+              user:
+                $ref: "../schemas/user.yaml"
+
+CompleteProfileSuccess:
+  description: Profile completed and user logged in
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: true
+          message:
+            type: string
+            example: Profile completed
+          data:
+            type: object
+            properties:
+              accessToken:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR...
+              user:
+                $ref: "../schemas/user.yaml"
+
+

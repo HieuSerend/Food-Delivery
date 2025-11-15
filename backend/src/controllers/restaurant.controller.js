@@ -1,18 +1,25 @@
-const RestaurantService = require('../services/restaurant.service')
+const RestaurantService = require('../services/restaurant.service');
+const ERR = require('../constants/errorCodes');
+const ERR_RESPONSE = require('../utils/httpErrors');
+const SUCCESS_RESPONSE = require('../utils/successResponse');
 
 class RestaurantController {
-  // [GET] /
-  async list(req, res, next) {
+  // [GET] /:restaurantId
+  async getInfo(req, res, next) {
     try {
-      const page = parseInt(req.query.page) || 1
-      const limit = parseInt(req.query.limit) || 16
+      console.log(req.userId);
+      const { restaurantId } = req.params;
+      if (!restaurantId) {
+        throw new ERR_RESPONSE.BadRequestError("Missing id if Restaurant", ERR.INVALID_INPUT);
+      }
 
-      const result = await RestaurantService.getList({ page, limit })
-      return res.status(200).json({ success: true, data: result.items, meta: result.meta })
+      const restaurantInfo = await RestaurantService.getRestaurantInfo(restaurantId);
+
+      return res.json(restaurantInfo);
     } catch (err) {
-      next(err)
+      console.error(err);
     }
   }
 }
 
-module.exports = new RestaurantController()
+module.exports = new RestaurantController();

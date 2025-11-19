@@ -38,7 +38,7 @@ class RestaurantService {
       throw new ERR_RESPONSE.NotFoundError("Restaurant is not found", ERR.RESTAURANT_NOT_FOUND)
     }
     if (restaurant.ownerId.toString() !== userId.toString()) {
-      throw new ERR_RESPONSE.ForbiddenError("You are not the owner of this restaurant", ERR.RESTAURANT_NOT_ACCEPTING_ORDERS);
+      throw new ERR_RESPONSE.ForbiddenError("You are not the owner of this restaurant", ERR.RESTAURANT_NOT_OWNER);
     }
 
     return restaurant;

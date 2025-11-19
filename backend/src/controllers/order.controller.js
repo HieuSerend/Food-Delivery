@@ -145,7 +145,7 @@ class OrderController {
         status: orderStatusObject.delivering
       });
 
-      return SUCCESS_RESPONSE.success(res, "Update Order Status To Prepared Successfully", { order });
+      return SUCCESS_RESPONSE.success(res, "Update Order Status To Delivering Successfully", { order });
     } catch (err) {
       next(err);
     }

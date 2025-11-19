@@ -15,7 +15,7 @@ router.get('/:restaurantId/orders/:orderId', requireAuth, OrderController.getOrd
 router.patch("/:restaurantId/orders/:orderId/confirm", requireAuth, OrderController.confirmOrderStatus);
 router.patch("/:restaurantId/orders/:orderId/prepare", requireAuth, OrderController.prepareOrderStatus);
 router.patch("/:restaurantId/orders/:orderId/deliver", requireAuth, OrderController.deliverOrderStatus);
-router.patch("/:restaurantId/orders/:orderId/cancel", requireAuth, OrderController.cancelOrder);
+router.patch("/:restaurantId/orders/:orderId/cancel", requireAuth, OrderController.cancelOrderStatus);
 
 
 module.exports = router;

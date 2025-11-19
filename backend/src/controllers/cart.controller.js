@@ -61,6 +61,19 @@ class CartController {
       next(err);
     }
   }
+
+  // [POST] /checkout
+  async checkout(req, res, next) {
+    try {
+      const userId = req.userId;
+      
+      const order = await CartService.checkout(userId);
+
+      return SUCCESS_RESPONSE.success(res, 'Check out successfully', { order });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new CartController();

@@ -34,6 +34,8 @@ const restaurantSchema = new mongoose.Schema({
 
     phone: { type: String, trim: true, required: true },
 
+    isAcceptingOrders: { type: Boolean, default: true},
+
     opening_time: { type: String, trim: true, default: "08:00" },
     closing_time: { type: String, trim: true, default: "22:00" },
 

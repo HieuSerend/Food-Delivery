@@ -3,6 +3,7 @@ const ERR_RESPONSE = require('../utils/httpErrors.js');
 const ERR = require('../constants/errorCodes');
 const cartRepository = require('../repositories/cart.repository');
 
+const orderService = require('./order.service.js');
 const menuItemService = require('./menuItem.service.js');
 
 class CartService {
@@ -115,6 +116,10 @@ class CartService {
       throw new ERR_RESPONSE.NotFoundError('Cart is not exists', ERR.CART_NOT_FOUND);
     }
 
+    if (!cart.items || cart.items.length === 0) {
+      throw new ERR_RESPONSE.NotFoundError('Cart is empty', ERR.CART_EMPTY);
+    }
+
     const invalidItems = [];
 
     for (const item of cart.items) {
@@ -139,13 +144,16 @@ class CartService {
     // if all items is ok
     const newOrder = await orderService.createOrder(cart);
 
-    await this.clearCart(userId);
+    const newCart = await this.clearCart(userId);
+
+    console.log(newCart);
 
     return newOrder;
   }
 
   async clearCart(userId) {
-    await cartRepository.clearCart(userId);
+    const newCart = await cartRepository.clearCart(userId);
+    return newCart;
   }
 
   // helper: recalculate totalItems + totalPrice

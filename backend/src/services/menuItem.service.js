@@ -80,7 +80,14 @@ class MenuItemService {
     return true;
   }
 
+  async checkAvailable(menuItemId) {
+    const menuItem = await MenuItemRepository.getById(menuItemId);
+    if (!menuItem) {
+      throw new ERR_RESPONSE.NotFoundError("Menu Item is not found", ERR.MENUITEM_NOT_FOUND);
+    }
 
+    return menuItem.isAvailable;
+  }
 }
 
 module.exports = new MenuItemService();

@@ -38,7 +38,7 @@ class CartRepository {
         totalItems: 0,
         totalPrice: 0
       },
-      { new: true }
+      { new: true, runValidators: false }
     );
   }
 }

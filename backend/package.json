@@ -5,7 +5,7 @@
   "scripts": {
     "format": "prettier --write .",
     "start": "node server.js",
-    "dev:swagger": "npm-run-all --parallel watch:swagger start:dev",
+    "dev:swagger": "npm-run-all --parallel watch:swagger dev",
     "watch:swagger": "chokidar \"src/docs/**/*.yaml\" -c \"npm run bundle:swagger\"",
     "bundle:swagger": "swagger-cli bundle ./src/docs/swagger.yaml --outfile dist/swagger.json --type json",
     "dev": "nodemon server.js"
@@ -45,7 +45,8 @@
     "lint-staged": "^16.2.6",
     "nodemon": "^3.1.10",
     "npm-run-all": "^4.1.5",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "swagger-cli": "^4.0.4"
   },
   "lint-staged": {
     "*.{js,json,ts,md}": [

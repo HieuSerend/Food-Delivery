@@ -29,6 +29,11 @@ class RestaurantService {
     return await RestaurantRepository.getById(restaurantId);
   }
 
+  // create restaurant
+  async createRestaurant(data) {
+    return await RestaurantRepository.create(data);
+  }
+
   // check owner 
   async checkOwner(restaurantId, userId) {
     console.log(restaurantId);

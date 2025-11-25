@@ -7,6 +7,8 @@ const cartRoutes = require('./cart.routes.js');
 const orderRoutes = require('./order.routes.js');
 const paymentRoutes = require('./payment.routes.js');
 const revenueRoutes = require('./revenue.routes.js');
+const adminRoutes = require('./admin.routes.js');
+
 const errorHandler = require('../middlewares/error.middleware');
 
 function route(app) {
@@ -20,7 +22,7 @@ function route(app) {
   apiRouter.use('/orders', orderRoutes);
   apiRouter.use('/payments', paymentRoutes);
   apiRouter.use('/revenue', revenueRoutes);
-
+  apiRouter.use('/admin', adminRoutes);
 
   app.use('/api', apiRouter); // add all with /api
 

@@ -8,7 +8,7 @@ class RevenueRepository {
 
     end.setDate(end.getDate() + 1);
 
-    return Order.aggregate([
+    return await Order.aggregate([
       {
         $match: {
           restaurantId: new Types.ObjectId(`${restaurantId}`),
@@ -37,7 +37,7 @@ class RevenueRepository {
   }
 
   async getRevenueByWeek(restaurantId, startOfWeek, endOfWeek) {
-    return Order.aggregate([
+    return await Order.aggregate([
     {
       $match: {
         restaurantId: new Types.ObjectId(`${restaurantId}`),
@@ -67,7 +67,7 @@ class RevenueRepository {
   }
 
   async getTotalRevenue(restaurantId) {
-    return Order.aggregate([
+    return await Order.aggregate([
       {
         $match: {
           restaurantId: new Types.ObjectId(`${restaurantId}`),

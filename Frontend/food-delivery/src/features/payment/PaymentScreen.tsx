@@ -16,7 +16,7 @@ const PaymentScreen: React.FC = () => {
                     <section className="mb-6">
                         <AddressSelector />
                     </section>
-                    <section className="mb-6">
+                    <section>
                         <PaymentMethod />
                     </section>
                     <section>

@@ -196,14 +196,8 @@ const CartScreen: React.FC<{ className?: string }> = ({ className = '' }) => {
         // Simulate API delay
         await new Promise((resolve) => setTimeout(resolve, 1500))
 
-        // Clear cart after successful checkout
-        setCart(null)
-
-        // Show success message (optional)
-        alert('Đặt hàng thành công!')
-
         // Redirect to order list
-        navigate('/orders')
+        navigate('/payment')
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Không thể đặt hàng')
       } finally {

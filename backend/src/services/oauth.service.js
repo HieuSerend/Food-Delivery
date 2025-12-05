@@ -38,9 +38,6 @@ class OauthService {
     const params = { ...(cfg.exams || {}), ...core };
     const query = buildQuery(params);
 
-    console.log('query: ', query);
-    console.log('url: ', `${cfg.authUrl}?${query}`);
-
     return { url: `${cfg.authUrl}?${query}`, state };
   }
 

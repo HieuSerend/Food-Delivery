@@ -1,5 +1,9 @@
 const AuthService = require('../services/auth.service');
 const passport = require('passport');
+const ERR = require('../constants/errorCodes');
+const SUCCESS_RESPONSE = require('../utils/successResponse');
+const HTTP_ERROR = require('../utils/httpErrors');
+
 
 class AuthController {
   // [GET] /
@@ -8,25 +12,35 @@ class AuthController {
   }
   // [POST] /register
   async register(req, res, next) {
-    const { username, password, idToken } = req.body;
-
-    if (!username || !password || !idToken) {
-      return res.status(400).json({ error: 'username, password, and idToken are required' });
-    }
-
     try {
-      const result = await AuthService.registerWithFirebase({ username, password, idToken });
-      return res.status(201).json(result);
+      const { username, password, idToken } = req.body;
+
+      if (!username || !password || !idToken) {
+        throw new HTTP_ERROR.BadRequestError('Missing username, password or idToken', ERR.AUTH_MISSING_FIELDS);
+      }
+
+      const user = await AuthService.registerWithFirebase({ username, password, idToken });
+      
+      return SUCCESS_RESPONSE.created(res, 'User registered successfully', {
+        user: {
+          id: user._id,
+          username: user.username,
+          phone: user.phone,
+        }
+      });
     } catch (err) {
       next(err);
     }
-    
   }
 
   // [POST] /login
   async login(req, res, next) {
     try{
       const { phone, password } = req.body;
+
+      if (!phone || !password) {
+        throw new HTTP_ERROR.BadRequestError('Phone and password are required', ERR.AUTH_MISSING_FIELDS);
+      }
 
       const deviceInfo = {
         userAgent: req.headers['user-agent'] || 'unknown',
@@ -35,23 +49,17 @@ class AuthController {
 
       const { user, accessToken, refreshToken } = await AuthService.login(phone, password, deviceInfo);
 
-      return res
-        .cookie('refreshToken', refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          maxAge: 7 * 24 * 60 * 60 * 1000
-        })
-        .status(200)
-        .json({
-          message: 'Login successfully',
-          accessToken,
-          user: {
-            id: user._id,
-            username: user.username,
-            phone: user.phone
-          }
-        });
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return SUCCESS_RESPONSE.success(res, 'Login successfully', {
+        accessToken,
+        user: { id: user._id, username: user.username, phone: user.phone },
+      })
     } catch (err) {
       next(err);
     }
@@ -62,12 +70,12 @@ class AuthController {
     try {
       const refreshToken = req.cookies.refreshToken;
       if (!refreshToken) {
-        return res.status(401).json({ error: 'Missing refresh token' });
+        throw new HTTP_ERROR.UnauthorizedError('Missing refresh token', ERR.AUTH_MISSING_REFRESH_TOKEN);
       }
 
-      const newAccessToken = await AuthService.refreshAccessToken(refreshToken);
+      const accessToken = await AuthService.refreshAccessToken(refreshToken);
 
-      return res.status(200).json({ accessToken: newAccessToken});
+      return SUCCESS_RESPONSE.success(res, 'Refresh successful', { accessToken });
     } catch (err) {
       return res.status(403).json({ message: err.message });
     }
@@ -77,27 +85,31 @@ class AuthController {
   async logout(req, res, next) {
     const  refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-      return res.status(400).json({ error: 'No token provided' });
+      throw new HTTP_ERROR.BadRequestError('No refresh token provided', ERR.AUTH_MISSING_REFRESH_TOKEN);
     }
 
     await AuthService.logout(refreshToken);
     res.clearCookie('refreshToken');
-    return res.status(200).json({ message: 'Logged out successfully' });
+
+    return SUCCESS_RESPONSE.success(res, 'Logged out successfully', {});
   }
 
   // [POST] /verification-email
   async sendEmailVerification(req, res, next) {
     try {
       const { email } = req.body;
-      const userId = req.user?.userId;
-      console.log('req.body:', req.body);
+      const userId = req.userId;
 
-      if (!email || !userId) {
-        return res.status(400).json({ error: 'Missing email or userId' });
+      if (!email) {
+        throw new HTTP_ERROR.BadRequestError('No email are provided', ERR.AUTH_MISSING_FIELDS);
+      }
+
+      if (!userId) {
+        throw new HTTP_ERROR.UnauthorizedError('No accessToken are provided', ERR.AUTH_MISSING_ACCESS_TOKEN);
       }
 
       await AuthService.sendEmailVerification(userId, email);
-      return res.status(200).json({ message: 'If the email exists, we have sent a verification email.' });
+      return SUCCESS_RESPONSE.success(res, 'If the email exists, we have sent a verification email.', {});
     } catch (err) {
       next(err);
     }
@@ -109,11 +121,11 @@ class AuthController {
       const { token } = req.query;
 
       if (!token) {
-        return res.status(400).json({ error: 'Missing token' });
+        throw new HTTP_ERROR.BadRequestError('Missing token', ERR.AUTH_MISSING_TOKEN);
       }
 
       await AuthService.verifyEmailToken(token);
-      return res.status(200).json({ success: true, message: 'Email verified successfully!' });
+      return SUCCESS_RESPONSE.success(res, 'Email verified successfully!', {});
     } catch (err) {
       next(err);
     }
@@ -126,14 +138,12 @@ class AuthController {
       email = email.trim();
 
       if (!email || email === '') {
-        return res.status(400).json({ error: 'No email was sended'});
+        throw new HTTP_ERROR.BadRequestError('Email is required', ERR.AUTH_MISSING_FIELDS);
       }
 
       await AuthService.sendPasswordResetRequest(email);
 
-      res.status(200).json({
-        message: 'Password reset email sent successfully'
-      });
+      return SUCCESS_RESPONSE.success(res, 'Password reset email sent successfully', {});
     } catch (err) {
       next(err);
     }
@@ -144,13 +154,17 @@ class AuthController {
     try {
       const { token, newPassword } = req.body;
 
-      if (!token || !newPassword) {
-        return res.status(400).json({ error: 'Missing token or new password' });
+      if (!token) {
+        throw new HTTP_ERROR.BadRequestError('Missing token', ARR.AUTH_MISSING_TOKEN);
+      }
+
+      if (!newPassword) {
+        throw new HTTP_ERROR.BadRequestError('Missing newPassword', ARR.AUTH_MISSING_FIELDS);
       }
 
       await AuthService.resetPassword(token, newPassword);
 
-      return res.status(200).json({ message: 'Password has been reset successfully' });
+      return SUCCESS_RESPONSE.success(res, 'Password has been reset successfully', {});
     } catch (err) {
       next(err);
     }
@@ -165,7 +179,9 @@ class AuthController {
       const { url } = AuthService.getOauthUrl(provider, returnUrl);
 
       console.log(url);
-      return res.status(200).json({ message: 'Get Oauth Url successfully', url: url });
+
+      return SUCCESS_RESPONSE.success(res, 'Get Oauth Url successfully', { url: url });
+      
     } catch (err) {
       next(err);
     }
@@ -179,35 +195,40 @@ class AuthController {
       return passport.authenticate(provider, { session: false }, async (err, userData, info) => {
         console.log('authenticating...');
         try {
-          // được lấy từ phần done của callback trong Strategy 
-          // lỗi do exchange code hoặc user cancel
-          if (err) return next(err);
+          // lỗi từ strategy
+          if (err) {
+            throw new HTTP_ERROR.UnauthorizedError(
+              err.message || 'OAuth authentication failed',
+              ERR.AUTH_INVALID_CREDENTIALS
+            );
+          }
 
-          // người dùng hủy hoặc có lỗi Oauth
+          // người dùng hủy hoặc provider trả lỗi
           if (!userData) {
             const { error, error_description } = req.query;
-            return res.status(400).json({
-              error: error || 'oauth_failed',
-              error_description: error_description || info?.message || 'OAuth login failed',
-            });
-          } 
+            throw new HTTP_ERROR.UnauthorizedError(
+              error_description || error || info?.message || 'OAuth login failed',
+              ERR.AUTH_INVALID_CREDENTIALS
+            );
+          }
 
           // Verify state
           const { state } = req.query;
           const st = AuthService.parseAndVerifyState(state);
 
-          if (!st) return res.status(400).json({ error: 'Bad state' });
-          if (st.provider !== provider) return res.status(400).json({ error: 'Provider Mismatch' });
+          if (!st) throw new HTTP_ERROR.BadRequestError('Invalid OAuth state', ERR.BAD_OAUTH_STATE);
+
+          if (st.provider !== provider) throw new HTTP_ERROR.BadRequestError('Provider mismatch', ERR.PROVIDER_MISMATCH);
 
           const { status, userId } = userData;
 
-          // Nếu user cần bổ sung sđt + username
-          if (status === 'REQUIRE_PHONE_USERNAME_PASSWORD') {
-            return res.status(202).json({
-              status: 'REQUIRE_PHONE_USERNAME_PASSWORD',
-              userId,
-              message: 'Please provide phone number, username and password to complete your profile.',
-            });
+          // Nếu user cần bổ sung thông tin
+          if (status === ERR.REQUIRE_PHONE_USERNAME_PASSWORD) {
+            return SUCCESS_RESPONSE.accepted(
+              res, 
+              ERR.REQUIRE_PHONE_USERNAME_PASSWORD,
+              'Please complete your profile to continue'
+            );
           }
 
           // nếu đầy đủ -> cấp token
@@ -218,25 +239,23 @@ class AuthController {
 
           const { user, accessToken, refreshToken } = await AuthService.generateTokensForUser(userId, deviceInfo);
 
-          return res
-            .cookie('refreshToken', refreshToken, {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'strict',
-              maxAge: 7 * 24 * 60 * 60 * 1000,
-            })
-            .status(200)
-            .json({
-              message: 'Login successfully via OAuth',
-              accessToken,
-              user: {
-                id: user._id,
-                username: user.username,
-                phone: user.phone,
-              },
-            });
-        } catch (error) {
-          next(error);
+          res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+          })
+            
+          return SUCCESS_RESPONSE.success(res, 'Login successfully via OAuth', {
+            accessToken,
+            user: {
+              id: user._id,
+              username: user.username,
+              phone: user.phone,
+            }
+          });
+        } catch (innerErr) {
+          next(innerErr);
         }
       })(req, res, next);
     } catch (err) {
@@ -250,7 +269,7 @@ class AuthController {
       const { userId, phone, username, password } = req.body;
 
       if (!userId || !phone || !username || !password) {
-        return res.status(400).json({ message: 'Missing userId or phone or username or password' });
+        throw new HTTP_ERROR.BadRequestError('Missing userId, phonem username or password', ERR.AUTH_MISSING_FIELDS);
       }
 
       const deviceInfo = {
@@ -260,26 +279,24 @@ class AuthController {
 
       const { user, accessToken, refreshToken } = await AuthService.completeProfile(userId, phone, username, password, deviceInfo);
 
-      return res
-        .cookie('refreshToken', refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
-          maxAge: 7 * 24 * 60 * 60 * 1000
-        })
-        .status(200)
-        .json({
-          message: 'Profile completed successfully',
-          accessToken: accessToken,
-          user: {
-            id: user._id,
-            username: user.username,
-            phone: user.phone,
-          },
-        });
-      } catch (err) {
-        next(err);
-      }
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+        
+      return SUCCESS_RESPONSE.success(res, 'Profile completed', {
+        accessToken,
+        user: {
+          id: user._id,
+          username: user.username,
+          phone: user.phone,
+        }
+      });
+    } catch (err) {
+      next(err);
+    }
   }
 }
 

@@ -1,0 +1,193 @@
+login:
+  post:
+    summary: Login with phone and password
+    tags: [Auth]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [phone, password]
+            properties:
+              phone:
+                type: string
+                example: "0912345678"
+              password:
+                type: string
+                example: "mypassword"
+    responses:
+      "200":
+        $ref: "../responses/auth.yaml#/LoginSuccess"
+      "400":
+        description: Missing phone or password
+      "401":
+        $ref: "../responses/auth.yaml#/LoginInvalid"
+
+refresh:
+  post:
+    summary: Refresh access token
+    tags: [Auth]
+    responses:
+      "200":
+        $ref: "../responses/auth.yaml#/RefreshSuccess"
+      "401":
+        description: Missing or invalid refresh token
+
+logout:
+  post:
+    summary: Logout user and clear refresh token cookie
+    tags: [Auth]
+    responses:
+      "200":
+        $ref: "../responses/auth.yaml#/LogoutSuccess"
+      "400":
+        description: No refresh token provided
+
+verification-email:
+  post:
+    summary: Send email verification link
+    tags: [Auth]
+    security:
+      - BearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email]
+            properties:
+              email:
+                type: string
+                example: example@gmail.com
+    responses:
+      "200":
+        $ref: "../responses/auth.yaml#/VerificationEmailSuccess"
+      "401":
+        description: Missing or invalid access token
+
+verify-email:
+  get:
+    summary: Verify email token
+    tags: [Auth]
+    parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+    responses:
+      "200":
+        $ref: "../responses/auth.yaml#/VerifyEmailSuccess"
+      "400":
+        description: Missing token
+
+password-reset-request:
+  post:
+    summary: Request password reset email
+    tags: [Auth]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [email]
+            properties:
+              email:
+                type: string
+                example: example@gmail.com
+    responses:
+      "200":
+        $ref: "../responses/auth.yaml#/PasswordResetRequestSuccess"
+      "400":
+        description: Missing email
+
+password-reset:
+  post:
+    summary: Reset password
+    tags: [Auth]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [token, newPassword]
+            properties:
+              token:
+                type: string
+              newPassword:
+                type: string
+    responses:
+      "200":
+        $ref: "../responses/auth.yaml#/PasswordResetSuccess"
+      "400":
+        description: Missing token or newPassword
+
+oauth-url:
+  get:
+    summary: Get OAuth provider redirect URL
+    tags: [Auth]
+    parameters:
+      - name: provider
+        in: query
+        required: true
+        schema:
+          type: string
+          enum: [google, facebook]
+      - name: returnUrl
+        in: query
+        schema:
+          type: string
+    responses:
+      "200":
+        $ref: "../responses/auth.yaml#/OauthUrlSuccess"
+      "400":
+        description: Missing provider
+
+oauth-callback:
+  get:
+    summary: OAuth callback handler
+    tags: [Auth]
+    parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+          enum: [google]
+    responses:
+      "200":
+        $ref: "../responses/auth.yaml#/OauthLoginSuccess"
+      "400":
+        description: Invalid OAuth state
+      "401":
+        description: OAuth login failed
+
+complete-profile:
+  post:
+    summary: Complete user profile after OAuth signup
+    tags: [Auth]
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [userId, phone, username, password]
+            properties:
+              userId:
+                type: string
+              phone:
+                type: string
+              username:
+                type: string
+              password:
+                type: string
+    responses:
+      "200":
+        $ref: "../responses/auth.yaml#/CompleteProfileSuccess"
+      "400":
+        description: Missing fields

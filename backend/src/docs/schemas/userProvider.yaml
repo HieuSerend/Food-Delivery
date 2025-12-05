@@ -1,0 +1,19 @@
+type: object
+properties:
+  provider:
+    type: string
+    enum: [local, google, firebase]
+    example: local
+  providerId:
+    type: string
+    example: "103928402131290"
+  emailAtProvider:
+    type: string
+  mailAtProvider:
+    type: string
+    nullable: true
+    example: "viet@gmail.com"
+  avatarUrl:
+    type: string
+    nullable: true
+    example: "https://lh3.googleusercontent.com/avatar.jpg"

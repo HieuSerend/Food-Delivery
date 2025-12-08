@@ -1,12 +1,31 @@
-// src/types/order.ts
-export type OrderStatus = 'pending' | 'confirmed' | 'cooking' | 'delivering' | 'completed' | 'cancelled';
+export type OrderStatus = 'pending' | 'confirmed' | 'delivering' | 'completed' | 'canceled' | 'refunded' | 'cooking';
+
+export interface OrderItem {
+  menuItemId: string
+  name: string
+  price: number
+  quantity: number
+  image?: string
+}
 
 export interface Order {
-    id: string;
-    customerName: string;
-    items: string; // VD: "2x Phở Bò, 1x Trà đá"
-    totalAmount: number;
-    status: OrderStatus;
-    createdAt: string; // Giờ đặt: "10:30"
-    paymentMethod: 'COD' | 'Banking';
+  _id: string
+  restaurantId: string
+  restaurantName: string
+  items: OrderItem[]
+  totalPrice: number
+  status: OrderStatus
+  createdAt: string
+  updatedAt: string
+  deliveryAddress?: string
+  paymentMethod?: string
+
+  customerName?: string;
+}
+
+export interface OrdersResponse {
+  orders: Order[]
+  total: number
+  page: number
+  pageSize: number
 }

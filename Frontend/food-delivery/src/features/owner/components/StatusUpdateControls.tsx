@@ -7,19 +7,22 @@ interface Props {
 }
 
 // Map trạng thái sang tiếng Việt và màu sắc
+// QUAN TRỌNG: Key ở đây phải khớp 100% với file types/order.ts
 const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string }> = {
     pending: { label: 'Chờ xác nhận', color: 'bg-yellow-100 text-yellow-800' },
     confirmed: { label: 'Đã nhận đơn', color: 'bg-blue-100 text-blue-800' },
     cooking: { label: 'Đang chế biến', color: 'bg-orange-100 text-orange-800' },
     delivering: { label: 'Đang giao', color: 'bg-purple-100 text-purple-800' },
     completed: { label: 'Hoàn thành', color: 'bg-green-100 text-green-800' },
-    cancelled: { label: 'Đã hủy', color: 'bg-red-100 text-red-800' },
+    // SỬA Ở ĐÂY: Dùng 'canceled' (1 chữ l)
+    canceled: { label: 'Đã hủy', color: 'bg-red-100 text-red-800' },
+    refunded: { label: 'Đã hoàn tiền', color: 'bg-gray-100 text-gray-800' },
 };
 
 const StatusUpdateControls: React.FC<Props> = ({ currentStatus, onChangeStatus }) => {
-    // Nếu đơn đã xong hoặc hủy thì chỉ hiển thị badge, không cho sửa
-    if (currentStatus === 'completed' || currentStatus === 'cancelled') {
-        const config = STATUS_CONFIG[currentStatus];
+    // Nếu đơn đã xong hoặc hủy thì chỉ hiển thị badge (nhãn), không cho sửa nữa
+    if (currentStatus === 'completed' || currentStatus === 'canceled' || currentStatus === 'refunded') {
+        const config = STATUS_CONFIG[currentStatus] || { label: currentStatus, color: 'bg-gray-100' };
         return (
             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${config.color}`}>
                 {config.label}
@@ -37,7 +40,8 @@ const StatusUpdateControls: React.FC<Props> = ({ currentStatus, onChangeStatus }
             <option value="cooking">Đang nấu</option>
             <option value="delivering">Đang giao</option>
             <option value="completed">Hoàn thành</option>
-            <option value="cancelled">Hủy đơn</option>
+            {/* SỬA Ở ĐÂY: Value phải là 'canceled' */}
+            <option value="canceled">Hủy đơn</option>
         </select>
     );
 };

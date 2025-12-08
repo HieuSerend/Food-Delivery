@@ -19,41 +19,48 @@ const OrderTable: React.FC<Props> = ({ orders, onUpdateStatus }) => {
                         <th className="px-4 py-3">Món ăn</th>
                         <th className="px-4 py-3">Tổng tiền</th>
                         <th className="px-4 py-3">Thanh toán</th>
-                        <th className="px-4 py-3">Hành động / Trạng thái</th>
+                        <th className="px-4 py-3">Hành động</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                     {orders.map((order) => (
-                        <tr key={order.id} className="hover:bg-gray-50 transition">
+                        <tr key={order._id} className="hover:bg-gray-50 transition">
                             <td className="px-4 py-3 font-medium text-gray-900">
-                                #{order.id}
-                                <br />
-                                <span className="text-xs text-gray-500 font-normal">{order.createdAt}</span>
+                                #{order._id.slice(-6)}
                             </td>
-                            <td className="px-4 py-3 text-gray-700">{order.customerName}</td>
-                            <td className="px-4 py-3 text-gray-600 max-w-xs truncate" title={order.items}>
-                                {order.items}
+                            <td className="px-4 py-3 text-gray-700">
+                                {order.customerName || 'Khách vãng lai'}
+                            </td>
+                            <td className="px-4 py-3 text-gray-600">
+                                {order.items.map((item, idx) => (
+                                    <div key={idx} className="whitespace-nowrap">
+                                        <span className="font-bold">{item.quantity}x</span> {item.name}
+                                    </div>
+                                ))}
                             </td>
                             <td className="px-4 py-3 font-bold text-gray-900">
-                                {order.totalAmount.toLocaleString()}đ
+                                {order.totalPrice.toLocaleString()}đ
                             </td>
                             <td className="px-4 py-3 text-gray-500">
-                                <span className="inline-block px-2 py-0.5 rounded text-xs bg-gray-100 border border-gray-200">
-                                    {order.paymentMethod}
-                                </span>
+                                {order.paymentMethod || 'Tiền mặt'}
                             </td>
                             <td className="px-4 py-3">
                                 {order.status === 'pending' ? (
-                                    // Nếu là Pending -> Hiện nút Nhận/Từ chối
                                     <AcceptRejectButtons
-                                        onAccept={() => onUpdateStatus(order.id, 'confirmed')}
-                                        onReject={() => onUpdateStatus(order.id, 'cancelled')}
+                                        onAccept={() => {
+                                            console.log("-> Gửi lệnh CONFIRMED");
+                                            onUpdateStatus(order._id, 'confirmed');
+                                        }}
+                                        onReject={() => {
+                                            console.log("-> Gửi lệnh CANCELED");
+                                            // Đảm bảo ở đây là 'canceled' (1 chữ l theo order.ts của bạn)
+                                            onUpdateStatus(order._id, 'canceled');
+                                        }}
                                     />
                                 ) : (
-                                    // Nếu đã nhận -> Hiện Dropdown chuyển trạng thái
                                     <StatusUpdateControls
                                         currentStatus={order.status}
-                                        onChangeStatus={(newStatus) => onUpdateStatus(order.id, newStatus)}
+                                        onChangeStatus={(newStatus) => onUpdateStatus(order._id, newStatus)}
                                     />
                                 )}
                             </td>
@@ -61,12 +68,6 @@ const OrderTable: React.FC<Props> = ({ orders, onUpdateStatus }) => {
                     ))}
                 </tbody>
             </table>
-
-            {orders.length === 0 && (
-                <div className="p-8 text-center text-gray-500">
-                    Chưa có đơn hàng nào.
-                </div>
-            )}
         </div>
     );
 };

@@ -5,12 +5,14 @@ const router = express.Router();
 const adminUserController = require('../../controllers/admin/adminUser.controller');
 
 const { requireAuth } = require('../../middlewares/auth.middleware');
-const { requireAdmin } = require('../../middlewares/admin.middleware');
+const { requireAdmin } = require('@/middlewares/role.middleware');
+
+const pagination = require('@/middlewares/pagination.middleware');
 
 // manage users 
 router.use(requireAuth, requireAdmin);
 
-router.get('/', adminUserController.listUsers); // view all users
+router.get('/', pagination(10, 50), adminUserController.listUsers); // view all users
 
 router.patch('/:userId/block', adminUserController.blockUser); // block user account
  

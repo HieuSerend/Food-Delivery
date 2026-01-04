@@ -6,27 +6,24 @@ class RestaurantRequestRepository {
   }
 
   async getPendingRequests() {
-    return await RestaurantRequest.find({ status: "pending" });
+    return await RestaurantRequest.find({ status: "pending" })
+      .populate('userId', 'username email')
+      .sort({ createdAt: -1 });
+  }
+
+  async getByUserId(userId) {
+    return await RestaurantRequest.find({ userId })
+    .populate('categoriesId', 'name')
+    .sort({ createdAt: -1 })
+    .lean(); // Dùng .lean() để trả về JS object thuần, giúp sort nhanh hơn
   }
 
   async getById(requestId) {
-    return await RestaurantRequest.findById(requestId);
+    return (await RestaurantRequest.findById(requestId)).populate('userId', 'role');
   }
 
   async getPendingRequestsByUserId(userId) {
     return await RestaurantRequest.exists({
-      userId: userId,
-      status: "pending"
-    });
-  }
-
-  async getByUserId(userId) {
-    return await RestaurantRequest.findOne({ userId: userId })
-      .sort({ createdAt: -1 }); // Lấy request mới nhất
-  }
-
-  async getPendingByUserId(userId) {
-    return await RestaurantRequest.findOne({
       userId: userId,
       status: "pending"
     });
